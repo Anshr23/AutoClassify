@@ -1,0 +1,42 @@
+# Python and IDE files
+__pycache__/
+*.py[cod]
+*.so
+.Python
+venv/
+.env/
+*.venv/
+.pytest_cache/
+
+# Data files (Excel, CSVs - exclude if they contain sensitive/raw data)
+*.csv
+*.data
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# OS/Editor files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-*
+
+# Dependency directories
+node_modules/
+bower_components/
+
+# Jupyter/Notebook checkpoints
+.ipynb_checkpoints/
+
+# Local development files
+*.local
+*.bak
+
+# Compiled files
+*.class
+*.exe
+*.dll
