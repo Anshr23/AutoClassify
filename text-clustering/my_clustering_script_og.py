@@ -6,7 +6,7 @@ import re
 from sklearn.cluster import AgglomerativeClustering
 import numpy as np
 from collections import defaultdict, OrderedDict
-import hashlib # Not used in the provided code, but keeping it as it was in original
+import hashlib
 from rake_nltk import Rake
 from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.corpus import stopwords as nltk_stopwords
@@ -276,14 +276,9 @@ def main():
     excel_file_path = "./Meter.xlsx"
     text_column_name = "REMARKS"
     output_excel_path_wide_format = "../clustered_remarks_named.xlsx" # Changed output file name for clarity 
-    
-    # --- START OF MODIFICATIONS ---
-    # Increased max_remark_clusters_limit to allow more distinct initial remark groups
-    max_remark_clusters_limit = 75 # Adjusted from 10. Experiment with 50, 75, 100.
-    # Increased max_name_clusters_limit to allow more distinct final category names
-    max_name_clusters_limit = 15 # Adjusted from 5. Experiment with 10, 15, 20.
-    target_column_name_words = 7 # Keeping as is, good value
-    # --- END OF MODIFICATIONS ---
+    max_remark_clusters_limit = 10
+    max_name_clusters_limit = 5 
+    target_column_name_words = 7
 
     print("\n--- Starting Text Clustering and Categorization Script (TF-IDF Naming - NO EXTERNAL APIs) ---")
     try:
@@ -300,17 +295,8 @@ def main():
         
         if english_remark_texts:
             print("\n--- Processing English Remarks for Clustering ---")
-            # --- START OF MODIFICATIONS ---
-            # Reduced min_doc_frequency for boilerplate removal.
-            # 0.8 is too high for a large dataset; 0.01 (1%) or 0.005 (0.5%) is more appropriate.
-            processed_remarks, embeddings = preprocess_and_embed(english_remark_texts, 0.01, "cpu") # Changed 0.8 to 0.01
-            # --- END OF MODIFICATIONS ---
-
-            # --- START OF MODIFICATIONS ---
-            # Adjusted HDBSCAN parameters to reduce noise (-1 labels) and create more stable clusters.
-            # Increased min_cluster_size and min_samples from 2 to 15. Experiment with 10, 20.
-            hdbscan_clusterer = hdbscan.HDBSCAN(min_cluster_size=15, min_samples=15, metric='euclidean', prediction_data=True)
-            # --- END OF MODIFICATIONS ---
+            processed_remarks, embeddings = preprocess_and_embed(english_remark_texts, 0.8, "cpu")
+            hdbscan_clusterer = hdbscan.HDBSCAN(min_cluster_size=2, min_samples=2, metric='euclidean', prediction_data=True)
             initial_cluster_labels = hdbscan_clusterer.fit_predict(embeddings)
             print(f"  [Clustering] Initial HDBSCAN complete. Found {len(set(initial_cluster_labels)) - (1 if -1 in initial_cluster_labels else 0)} clusters.")
 
@@ -362,8 +348,7 @@ def main():
                     proposed_final_name = get_tfidf_cluster_name(remarks_for_merged_category_processed, target_word_count=target_column_name_words)
                     
                     if not proposed_final_name:
-                        # Improved generic name for final categories if TF-IDF/RAKE fails here
-                        proposed_final_name = f"Broad Category {chr(65 + name_cluster_id % 26)}{name_cluster_id // 26 if name_cluster_id >= 26 else ''}"
+                        proposed_final_name = f"Merged Generic Category Type For Cluster {name_cluster_id}"
                     
                     final_name = get_unique_name(proposed_final_name, used_final_names, str(name_cluster_id))
                     
